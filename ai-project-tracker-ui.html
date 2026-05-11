@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ProjectTrack · AI Project Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#f4f4f5;color:#18181b;-webkit-font-smoothing:antialiased}
+
+/* Layout */
+.shell{display:flex;height:100vh}
+.sidebar{width:220px;background:#18181b;display:flex;flex-direction:column;flex-shrink:0;height:100vh}
+.main{flex:1;overflow-y:auto}
+
+/* Sidebar */
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid #27272a}
+.sb-logo-mark{width:28px;height:28px;background:#fbbf24;display:inline-flex;align-items:center;justify-content:center;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);font-weight:800;font-size:11px;color:#18181b;flex-shrink:0}
+.sb-brand{margin-left:10px}
+.sb-brand-name{color:#fff;font-weight:600;font-size:14px;line-height:1.2}
+.sb-brand-sub{color:#71717a;font-size:11px}
+.sb-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;color:#a1a1aa;transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{color:#fff;background:#27272a}
+.nav-item.active{background:#fbbf24;color:#18181b}
+.nav-icon{width:16px;height:16px;flex-shrink:0}
+.sb-channels{padding:12px 20px 14px;border-top:1px solid #27272a}
+.sb-ch-label{font-size:10px;font-weight:600;color:#52525b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.sb-ch-status{display:flex;align-items:center;gap:6px;font-size:11px;color:#52525b;margin-bottom:8px}
+.sb-ch-dot{width:6px;height:6px;border-radius:50%;background:#34d399;flex-shrink:0}
+.sb-ch-item{font-family:'DM Mono',monospace;font-size:11px;color:#3f3f46;padding:2px 0}
+.sb-user{padding:12px 16px;border-top:1px solid #27272a;display:flex;align-items:center;gap:10px}
+.avatar{width:28px;height:28px;border-radius:50%;background:#fbbf24;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#18181b;flex-shrink:0}
+.sb-user-name{font-size:12px;color:#fff;font-weight:500}
+.sb-user-role{font-size:11px;color:#52525b}
+
+/* Page */
+.page{display:none;padding:36px 40px;max-width:1100px;margin:0 auto}
+.page.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.page-title{font-size:22px;font-weight:700;color:#18181b}
+.page-sub{font-size:13px;color:#71717a;margin-top:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
+.btn-dark{background:#18181b;color:#fff}
+.btn-dark:hover{background:#27272a}
+.btn-amber{background:#fbbf24;color:#18181b}
+.btn-amber:hover{background:#f59e0b}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#d4d4d8;border:1px solid #d4d4d8;margin-bottom:24px}
+.stat-card{background:#fff;padding:20px 22px}
+.stat-label{font-size:10px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.stat-val{font-size:28px;font-weight:700;color:#18181b;line-height:1;margin-bottom:4px}
+.stat-val.amber{color:#d97706}
+.stat-val.red{color:#dc2626}
+.stat-delta{font-size:12px;color:#a1a1aa}
+
+/* Risk banner */
+.risk-banner{border:1px solid #fecaca;background:#fef2f2;padding:12px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.risk-banner-text{font-size:13px;color:#b91c1c}
+.risk-banner-text b{font-weight:600}
+.risk-link{margin-left:auto;font-size:12px;font-weight:600;color:#dc2626;cursor:pointer;white-space:nowrap;background:none;border:none;font-family:inherit}
+.risk-link:hover{text-decoration:underline}
+
+/* Table */
+.card{background:#fff;border:1px solid #e4e4e7;overflow:hidden}
+.card-header{padding:14px 20px;border-bottom:1px solid #f4f4f5;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:600;color:#3f3f46}
+.filter-tabs{display:flex;gap:4px}
+.ftab{font-size:11px;padding:4px 10px;cursor:pointer;border:none;font-family:inherit;background:none;color:#a1a1aa;font-weight:500}
+.ftab:hover{color:#18181b}
+.ftab.active{background:#18181b;color:#fff}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:10px 16px;font-size:11px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #f4f4f5}
+tbody tr{border-bottom:1px solid #f4f4f5;cursor:pointer;transition:background .1s}
+tbody tr:hover{background:#fafafa}
+tbody tr:last-child{border-bottom:none}
+td{padding:14px 16px;font-size:13px;vertical-align:middle}
+.proj-name{font-weight:600;color:#18181b;margin-bottom:2px}
+.proj-name:hover{color:#d97706}
+.proj-desc{font-size:11px;color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+
+/* Badges */
+.badge{font-size:11px;font-weight:500;padding:3px 8px;display:inline-block}
+.badge-active{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+.badge-hold{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.badge-done{background:#f4f4f5;color:#71717a;border:1px solid #e4e4e7}
+.badge-critical{background:#fee2e2;color:#991b1b}
+.badge-high{background:#fef3c7;color:#92400e}
+.badge-medium{background:#eff6ff;color:#1d4ed8}
+.badge-low{background:#f4f4f5;color:#71717a}
+.badge-ai{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.badge-slack{background:#faf5ff;color:#6b21a8;border:1px solid #e9d5ff}
+.badge-todo{background:#f4f4f5;color:#71717a}
+.badge-inprog{background:#eff6ff;color:#1d4ed8}
+.badge-blocked{background:#fee2e2;color:#991b1b}
+.badge-donestat{background:#ecfdf5;color:#065f46}
+
+/* Progress */
+.prog-wrap{display:flex;align-items:center;gap:8px}
+.prog-track{flex:1;height:6px;background:#f4f4f5;border-radius:0;overflow:hidden;min-width:60px}
+.prog-fill{height:100%;background:#fbbf24;transition:width .3s}
+.prog-label{font-size:11px;color:#a1a1aa;width:30px;text-align:right;flex-shrink:0}
+.risk-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#dc2626}
+.risk-pulse{width:6px;height:6px;border-radius:50%;background:#f87171;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Activity feed */
+.feed{background:#fff;border:1px solid #e4e4e7;margin-top:18px}
+.feed-item{padding:14px 20px;border-bottom:1px solid #f9f9f9;display:flex;align-items:flex-start;gap:14px}
+.feed-item:last-child{border-bottom:none}
+.feed-avatar{width:28px;height:28px;border-radius:50%;background:#f4f4f5;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#71717a;flex-shrink:0;margin-top:2px}
+.feed-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.feed-author{font-size:12px;font-weight:600;color:#3f3f46}
+.feed-channel{font-family:'DM Mono',monospace;font-size:11px;color:#a1a1aa}
+.feed-time{font-size:11px;color:#d4d4d8}
+.feed-msg{font-size:13px;color:#52525b;line-height:1.5}
+.feed-risk{margin-left:auto;flex-shrink:0}
+
+/* Project Detail */
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#a1a1aa;cursor:pointer;margin-bottom:22px;background:none;border:none;font-family:inherit;transition:color .15s;padding:0}
+.back-btn:hover{color:#18181b}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px}
+.detail-title-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.detail-title{font-size:22px;font-weight:700;color:#18181b}
+.ch-pill{font-family:'DM Mono',monospace;font-size:11px;background:#f4f4f5;color:#71717a;padding:3px 8px}
+.detail-desc{font-size:13px;color:#71717a}
+.prog-card{background:#fff;border:1px solid #e4e4e7;padding:20px;margin-bottom:20px}
+.prog-stats{display:flex;gap:24px;margin-top:12px;font-size:12px}
+.prog-stat{color:#71717a}.prog-stat b{font-weight:700;margin-right:3px}
+.prog-stat.blue b{color:#2563eb}
+.prog-stat.red b{color:#dc2626}
+.prog-stat.green b{color:#059669}
+.prog-perc{font-size:26px;font-weight:700;color:#18181b}
+.prog-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.prog-bar-big{height:8px;background:#f4f4f5;overflow:hidden;margin-bottom:0}
+.prog-fill-big{height:100%;background:#fbbf24}
+
+/* Tabs */
+.tab-bar{display:flex;border-bottom:1px solid #e4e4e7;margin-bottom:18px}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:#a1a1aa;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.tab:hover{color:#3f3f46}
+.tab.active{border-bottom-color:#18181b;color:#18181b;font-weight:600}
+
+/* AI result box */
+.ai-result{background:#fff;border:1px solid #e4e4e7;margin-top:14px}
+.ai-result-head{padding:12px 18px;border-bottom:1px solid #f4f4f5;display:flex;align-items:center;gap:8px}
+.ai-badge{width:22px;height:22px;background:#fbbf24;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-badge svg{width:12px;height:12px;color:#18181b}
+.ai-label{font-size:12px;font-weight:600;color:#3f3f46}
+.ai-body{padding:16px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#52525b;line-height:1.7;background:#fafafa;white-space:pre-wrap}
+.ai-actions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.ai-action{background:#fff;border:1px solid #e4e4e7;padding:16px;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit}
+.ai-action:hover{border-color:#fbbf24;background:#fffbeb}
+.ai-action-icon{margin-bottom:10px;color:#a1a1aa}
+.ai-action:hover .ai-action-icon{color:#d97706}
+.ai-action-title{font-size:13px;font-weight:600;color:#3f3f46;margin-bottom:2px}
+.ai-action-sub{font-size:11px;color:#a1a1aa}
+.skeleton{background:linear-gradient(90deg,#f4f4f5 25%,#e4e4e7 50%,#f4f4f5 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;height:12px;margin-bottom:8px;border-radius:0}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Chat page */
+.chat-shell{display:flex;height:calc(100vh - 0px)}
+.chat-sidebar{width:220px;border-right:1px solid #e4e4e7;background:#fff;display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
+.chat-main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh}
+.chat-head{padding:14px 20px;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px;flex-shrink:0;background:#fff}
+.chat-head-icon{width:30px;height:30px;background:#fbbf24;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-head-title{font-size:13px;font-weight:600;color:#18181b}
+.chat-head-sub{font-size:11px;color:#a1a1aa;margin-top:1px}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;background:#f9f9f9;display:flex;flex-direction:column;gap:16px}
+.chat-bubble-wrap{display:flex;gap:10px;align-items:flex-start}
+.chat-bubble-wrap.user{flex-direction:row-reverse}
+.chat-avt{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
+.chat-avt.ai{background:#fbbf24;color:#18181b}
+.chat-avt.user{background:#18181b;color:#fff}
+.chat-bubble{max-width:72%;padding:12px 16px;font-size:13px;line-height:1.6}
+.chat-bubble.ai{background:#fff;border:1px solid #e4e4e7;color:#3f3f46}
+.chat-bubble.user{background:#18181b;color:#fff}
+.chat-sources{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.source-pill{font-family:'DM Mono',monospace;font-size:10px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:2px 6px}
+.chat-input-bar{padding:14px 20px;border-top:1px solid #e4e4e7;display:flex;gap:10px;background:#fff;flex-shrink:0}
+.chat-input{flex:1;border:1px solid #e4e4e7;padding:10px 14px;font-size:13px;font-family:inherit;background:#fafafa;outline:none;transition:border-color .15s}
+.chat-input:focus{border-color:#a1a1aa;background:#fff}
+.chat-send{background:#18181b;color:#fff;border:none;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;font-family:inherit;transition:background .15s;flex-shrink:0}
+.chat-send:hover{background:#27272a}
+.chat-send:disabled{opacity:.3;cursor:default}
+.typing-dots{display:flex;gap:4px;align-items:center;padding:4px 0}
+.dot{width:6px;height:6px;border-radius:50%;background:#d4d4d8;animation:bounce .8s ease infinite}
+.dot:nth-child(2){animation-delay:.15s}
+.dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:scale(1)}40%{transform:scale(1.4)}}
+.docs-section{padding:14px 16px;border-bottom:1px solid #f4f4f5}
+.docs-label{font-size:10px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.doc-item{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:12px;color:#52525b;font-family:'DM Mono',monospace}
+.upload-btn{margin-top:8px;width:100%;border:1px dashed #d4d4d8;background:none;padding:8px;font-size:11px;color:#a1a1aa;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;font-family:inherit}
+.upload-btn:hover{border-color:#a1a1aa;color:#52525b}
+.suggestions-section{padding:14px 16px;flex:1}
+.suggestions-label{font-size:10px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.suggestion{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;font-size:12px;color:#71717a;padding:6px 0;border-bottom:1px solid #f9f9f9;cursor:pointer;transition:color .1s}
+.suggestion:last-child{border-bottom:none}
+.suggestion:hover{color:#18181b}
+.proj-sel{margin-bottom:0}
+.proj-sel select{width:100%;border:1px solid #e4e4e7;padding:7px 10px;font-size:12px;font-family:inherit;background:#fafafa;cursor:pointer;outline:none;color:#3f3f46}
+
+/* Reports */
+.reports-grid{display:grid;grid-template-columns:1fr 2fr;gap:20px}
+.proj-pick{background:#fff;border:1px solid #e4e4e7;padding:16px 16px 8px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+.proj-pick:hover{border-color:#a1a1aa}
+.proj-pick.sel{border-color:#18181b;background:#fff}
+.proj-pick-name{font-size:13px;font-weight:600;color:#18181b;margin-bottom:2px}
+.proj-pick-ch{font-family:'DM Mono',monospace;font-size:11px;color:#a1a1aa;margin-bottom:8px}
+.proj-mini-prog{height:4px;background:#f4f4f5;margin-bottom:4px}
+.proj-mini-fill{height:100%;background:#fbbf24}
+.proj-mini-pct{font-size:11px;color:#a1a1aa}
+.report-card{background:#fff;border:1px solid #e4e4e7}
+.report-card-head{padding:16px 20px;border-bottom:1px solid #f4f4f5;display:flex;align-items:center;justify-content:space-between}
+.report-card-title{font-size:14px;font-weight:700;color:#18181b}
+.report-card-meta{font-size:11px;color:#a1a1aa;margin-top:2px}
+.report-card-body{padding:22px 24px;font-size:13px;color:#3f3f46;line-height:1.75}
+.report-card-body h2{font-size:15px;font-weight:700;color:#18181b;margin-top:18px;margin-bottom:6px}
+.report-card-body h2:first-child{margin-top:0}
+.report-card-body ul{padding-left:0;list-style:none;margin-bottom:4px}
+.report-card-body li::before{content:"✓ ";color:#059669;font-weight:700}
+.report-card-body .risk-block{background:#fef2f2;border:1px solid #fecaca;padding:10px 14px;color:#b91c1c;border-radius:0;margin:8px 0;font-size:13px}
+.report-card-body ol{padding-left:18px;margin-bottom:4px}
+.report-card-body table{width:100%;border-collapse:collapse;margin-top:8px}
+.report-card-body th{text-align:left;font-size:11px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-bottom:1px solid #f4f4f5}
+.report-card-body td{padding:8px 12px;border-bottom:1px solid #f4f4f5;font-size:13px}
+.report-card-body td:first-child{font-weight:500;color:#71717a}
+.empty-report{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:#a1a1aa}
+.empty-report svg{width:40px;height:40px;margin-bottom:10px;opacity:.3}
+.gen-btn-wrap{margin-top:14px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div style="display:flex;align-items:center">
+        <div class="sb-logo-mark">AI</div>
+        <div class="sb-brand">
+          <div class="sb-brand-name">ProjectTrack</div>
+          <div class="sb-brand-sub">AI-powered</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <button class="nav-item active" onclick="showPage('dashboard',this)">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('project',this)">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Project View
+      </button>
+      <button class="nav-item" onclick="showPage('chat',this)">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        AI Chat
+      </button>
+      <button class="nav-item" onclick="showPage('reports',this)">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Reports
+      </button>
+    </nav>
+    <div class="sb-channels">
+      <div class="sb-ch-label">Slack</div>
+      <div class="sb-ch-status"><span class="sb-ch-dot"></span>3 channels live</div>
+      <div class="sb-ch-item">#payments-eng</div>
+      <div class="sb-ch-item">#mobile-team</div>
+      <div class="sb-ch-item">#ai-features</div>
+    </div>
+    <div class="sb-user">
+      <div class="avatar">A</div>
+      <div><div class="sb-user-name">Ayush Sharma</div><div class="sb-user-role">Admin</div></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div><div class="page-title">Overview</div><div class="page-sub">Monday, 12 May 2025 · All projects</div></div>
+        <button class="btn btn-dark"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>New Project</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-val">3</div><div class="stat-delta">5 total</div></div>
+        <div class="stat-card"><div class="stat-label">Total Tasks</div><div class="stat-val">92</div><div class="stat-delta">56 completed</div></div>
+        <div class="stat-card"><div class="stat-label">Open Risks</div><div class="stat-val red">4</div><div class="stat-delta">Needs attention</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Progress</div><div class="stat-val amber">52%</div><div class="stat-delta">Across all projects</div></div>
+      </div>
+      <div class="risk-banner">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <span class="risk-banner-text"><b>4 active risks</b> detected across projects. AI has flagged these for immediate review.</span>
+        <button class="risk-link">View All</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Projects</span>
+          <div class="filter-tabs">
+            <button class="ftab active">All</button><button class="ftab">Active</button><button class="ftab">On Hold</button><button class="ftab">Done</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Project</th><th>Status</th><th>Channel</th><th>Progress</th><th>Tasks</th><th>Risks</th><th>Updated</th></tr></thead>
+          <tbody>
+            <tr onclick="showPage('project',null,'1')">
+              <td><div class="proj-name">Payments Overhaul</div><div class="proj-desc">Migrate legacy payment processor to Stripe with full PCI compliance</div></td>
+              <td><span class="badge badge-active">active</span></td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:#a1a1aa">#payments-eng</td>
+              <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:56%"></div></div><span class="prog-label">56%</span></div></td>
+              <td style="font-size:12px;color:#71717a">14/25 <span style="color:#dc2626;font-weight:500">·1 blocked</span></td>
+              <td><span class="risk-dot"><span class="risk-pulse"></span>1 risk</span></td>
+              <td style="font-size:12px;color:#a1a1aa">2 hours ago</td>
+            </tr>
+            <tr onclick="showPage('project',null,'2')">
+              <td><div class="proj-name">Mobile App v3</div><div class="proj-desc">Complete redesign of iOS and Android apps with new design system</div></td>
+              <td><span class="badge badge-active">active</span></td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:#a1a1aa">#mobile-team</td>
+              <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:35%"></div></div><span class="prog-label">35%</span></div></td>
+              <td style="font-size:12px;color:#71717a">7/20</td>
+              <td style="font-size:12px;color:#d4d4d8">—</td>
+              <td style="font-size:12px;color:#a1a1aa">Yesterday</td>
+            </tr>
+            <tr onclick="showPage('project',null,'3')">
+              <td><div class="proj-name">Data Pipeline Infra</div><div class="proj-desc">Real-time data pipeline using Kafka and Flink for analytics</div></td>
+              <td><span class="badge badge-hold">on hold</span></td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:#a1a1aa">#data-infra</td>
+              <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:43%"></div></div><span class="prog-label">43%</span></div></td>
+              <td style="font-size:12px;color:#71717a">8/14 <span style="color:#dc2626;font-weight:500">·3 blocked</span></td>
+              <td><span class="risk-dot"><span class="risk-pulse"></span>2 risks</span></td>
+              <td style="font-size:12px;color:#a1a1aa">3 days ago</td>
+            </tr>
+            <tr onclick="showPage('project',null,'4')">
+              <td><div class="proj-name">Auth Service Rewrite</div><div class="proj-desc">Replace monolith auth with OAuth2/OIDC microservice</div></td>
+              <td><span class="badge badge-done">completed</span></td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:#a1a1aa">#platform-eng</td>
+              <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:100%;background:#34d399"></div></div><span class="prog-label">100%</span></div></td>
+              <td style="font-size:12px;color:#71717a">22/22</td>
+              <td style="font-size:12px;color:#d4d4d8">—</td>
+              <td style="font-size:12px;color:#a1a1aa">1 week ago</td>
+            </tr>
+            <tr onclick="showPage('project',null,'5')">
+              <td><div class="proj-name">AI Feature Launch</div><div class="proj-desc">Integrate Claude-powered suggestions and auto-tagging</div></td>
+              <td><span class="badge badge-active">active</span></td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:#a1a1aa">#ai-features</td>
+              <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:29%"></div></div><span class="prog-label">29%</span></div></td>
+              <td style="font-size:12px;color:#71717a">5/15 <span style="color:#dc2626;font-weight:500">·1 blocked</span></td>
+              <td><span class="risk-dot"><span class="risk-pulse"></span>1 risk</span></td>
+              <td style="font-size:12px;color:#a1a1aa">4 hours ago</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="feed">
+        <div class="card-header"><span class="card-title">Recent Slack Activity</span></div>
+        <div class="feed-item"><div class="feed-avatar">P</div><div style="flex:1;min-width:0"><div class="feed-meta"><span class="feed-author">Priya K</span><span class="feed-channel">#payments-eng</span><span class="feed-time">2h ago</span></div><div class="feed-msg">Stripe webhook tests passing on staging. All 47 event types handled correctly. Deploying to prod tomorrow.</div></div></div>
+        <div class="feed-item"><div class="feed-avatar">R</div><div style="flex:1;min-width:0"><div class="feed-meta"><span class="feed-author">Rohan M</span><span class="feed-channel">#ai-features</span><span class="feed-time">4h ago</span></div><div class="feed-msg">⚠️ LLM latency is 4.2s avg — hitting the SLA threshold. Need to add caching layer ASAP.</div></div><div class="feed-risk"><span class="badge badge-critical" style="font-size:10px;font-weight:600">RISK</span></div></div>
+        <div class="feed-item"><div class="feed-avatar">S</div><div style="flex:1;min-width:0"><div class="feed-meta"><span class="feed-author">Sara L</span><span class="feed-channel">#mobile-team</span><span class="feed-time">Yesterday</span></div><div class="feed-msg">Design QA approved the new onboarding flow. Handing off to devs today.</div></div></div>
+        <div class="feed-item"><div class="feed-avatar">D</div><div style="flex:1;min-width:0"><div class="feed-meta"><span class="feed-author">Dev C</span><span class="feed-channel">#data-infra</span><span class="feed-time">3d ago</span></div><div class="feed-msg">Kafka consumer is 2 hours behind — disk I/O bottleneck. On hold until we scale the EBS volumes.</div></div><div class="feed-risk"><span class="badge badge-critical" style="font-size:10px;font-weight:600">RISK</span></div></div>
+      </div>
+    </div>
+
+    <!-- PROJECT DETAIL -->
+    <div id="page-project" class="page">
+      <button class="back-btn" onclick="showPage('dashboard',null)">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>All Projects
+      </button>
+      <div class="detail-header">
+        <div>
+          <div class="detail-title-row">
+            <span class="detail-title" id="det-name">Payments Overhaul</span>
+            <span class="ch-pill" id="det-ch">#payments-eng</span>
+          </div>
+          <div class="detail-desc" id="det-desc">Migrate legacy payment processor to Stripe with full PCI compliance</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-amber" onclick="doAI('summary')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>AI Summary
+          </button>
+        </div>
+      </div>
+      <div class="prog-card">
+        <div class="prog-header-row">
+          <span style="font-size:13px;font-weight:600;color:#3f3f46">Overall Progress</span>
+          <span class="prog-perc" id="det-pct">56%</span>
+        </div>
+        <div class="prog-bar-big"><div class="prog-fill-big" id="det-bar" style="width:56%"></div></div>
+        <div class="prog-stats">
+          <span class="prog-stat"><b id="det-todo">4</b> To Do</span>
+          <span class="prog-stat blue"><b id="det-ip">6</b> In Progress</span>
+          <span class="prog-stat red"><b id="det-bl">1</b> Blocked</span>
+          <span class="prog-stat green"><b id="det-dn">14</b> Done</span>
+          <span class="prog-stat" style="margin-left:auto"><b id="det-total">25</b> total</span>
+        </div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab active" onclick="showTab('tasks',this)">Tasks</button>
+        <button class="tab" onclick="showTab('activity',this)">Activity</button>
+        <button class="tab" onclick="showTab('ai',this)">AI Actions</button>
+      </div>
+
+      <!-- Tasks tab -->
+      <div id="tab-tasks" class="tab-pane">
+        <div class="card">
+          <table>
+            <thead><tr><th>Task</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Source</th></tr></thead>
+            <tbody>
+              <tr><td style="max-width:320px"><span style="font-size:13px;font-weight:500;color:#18181b">Migrate payment gateway to Stripe v3 API</span></td><td><span class="badge badge-donestat">done</span></td><td><span class="badge badge-high">high</span></td><td style="font-size:13px;color:#71717a">Priya K</td><td></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500">Implement 3DS2 authentication flow</span></td><td><span class="badge badge-inprog">in progress</span></td><td><span class="badge badge-critical">critical</span></td><td style="font-size:13px;color:#71717a">Dev C</td><td><span class="badge badge-ai" style="font-size:11px">AI</span></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500">Write PCI compliance documentation</span></td><td><span class="badge badge-inprog">in progress</span></td><td><span class="badge badge-high">high</span></td><td style="font-size:13px;color:#71717a">Sara L</td><td></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500">Load test payment endpoints at 10k TPS</span></td><td><span class="badge badge-blocked">blocked</span></td><td><span class="badge badge-high">high</span></td><td style="font-size:13px;color:#71717a">Rohan M</td><td><span class="badge badge-slack" style="font-size:11px">Slack</span></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500">Set up Stripe webhook event handlers</span></td><td><span class="badge badge-inprog">in progress</span></td><td><span class="badge badge-medium">medium</span></td><td style="font-size:13px;color:#71717a">Dev C</td><td></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500">Update frontend checkout component</span></td><td><span class="badge badge-todo">todo</span></td><td><span class="badge badge-medium">medium</span></td><td style="font-size:13px;color:#71717a">Sara L</td><td></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500">Add refund flow with idempotency keys</span></td><td><span class="badge badge-todo">todo</span></td><td><span class="badge badge-medium">medium</span></td><td style="font-size:13px;color:#d4d4d8">—</td><td><span class="badge badge-ai" style="font-size:11px">AI</span></td></tr>
+              <tr><td><span style="font-size:13px;font-weight:500;color:#a1a1aa;text-decoration:line-through">Deprecate old payment API endpoints</span></td><td><span class="badge badge-todo">todo</span></td><td><span class="badge badge-low">low</span></td><td style="font-size:13px;color:#d4d4d8">—</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Activity tab -->
+      <div id="tab-activity" class="tab-pane" style="display:none">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="feed-avatar" style="margin-top:0">P</div><span style="font-size:12px;font-weight:600;color:#3f3f46">Priya K</span><span class="badge badge-slack" style="font-size:10px">slack</span><span style="margin-left:auto;font-size:11px;color:#d4d4d8">2 hours ago</span></div><p style="font-size:13px;color:#52525b;line-height:1.6">Stripe webhook tests passing on staging. All 47 event types handled correctly. Deploying to production tomorrow morning.</p></div>
+          <div class="card" style="padding:18px 20px;border-color:#fecaca;background:#fff9f9"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="feed-avatar" style="margin-top:0">R</div><span style="font-size:12px;font-weight:600;color:#3f3f46">Rohan M</span><span class="badge badge-slack" style="font-size:10px">slack</span><span style="margin-left:auto;font-size:11px;color:#d4d4d8">2 days ago</span></div><p style="font-size:13px;color:#52525b;line-height:1.6">⚠️ Load test revealed bottleneck: DB connection pool exhausted at 6,000 TPS. Need to scale RDS or add PgBouncer before we can clear this task.</p><div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:12px;color:#b91c1c;background:#fef2f2;padding:8px 12px;border:1px solid #fecaca"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Blocking load test milestone — may delay go-live by 1–2 weeks.</div></div>
+          <div class="card" style="padding:18px 20px;background:#fffef5"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="feed-avatar" style="background:#fef3c7;color:#92400e;margin-top:0">AI</div><span style="font-size:12px;font-weight:600;color:#3f3f46">AI Summary</span><span class="badge badge-ai" style="font-size:10px">ai_summary</span><span style="margin-left:auto;font-size:11px;color:#d4d4d8">Monday</span></div><p style="font-size:13px;color:#52525b;line-height:1.6">Week summary: 3 tasks completed, 2 in progress, 1 blocker identified. PCI documentation is on track. Main risk is the DB connection pool issue discovered during load testing at 6k TPS.</p></div>
+        </div>
+      </div>
+
+      <!-- AI Actions tab -->
+      <div id="tab-ai" class="tab-pane" style="display:none">
+        <div class="ai-actions-grid">
+          <button class="ai-action" onclick="doAI('summary')">
+            <div class="ai-action-icon"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+            <div class="ai-action-title">Summarize Updates</div><div class="ai-action-sub">via Claude AI</div>
+          </button>
+          <button class="ai-action" onclick="doAI('tasks')">
+            <div class="ai-action-icon"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg></div>
+            <div class="ai-action-title">Extract Tasks</div><div class="ai-action-sub">via Claude AI</div>
+          </button>
+          <button class="ai-action" onclick="doAI('risks')">
+            <div class="ai-action-icon"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+            <div class="ai-action-title">Analyze Risks</div><div class="ai-action-sub">via Claude AI</div>
+          </button>
+        </div>
+        <div id="ai-result-box" class="ai-result" style="display:none">
+          <div class="ai-result-head">
+            <div class="ai-badge"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+            <span class="ai-label">Claude AI Response</span>
+            <span id="ai-loading-txt" style="margin-left:8px;font-size:11px;color:#a1a1aa"></span>
+          </div>
+          <div id="ai-body" class="ai-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT PAGE -->
+    <div id="page-chat" class="page" style="padding:0;max-width:none">
+      <div class="chat-shell">
+        <div class="chat-sidebar">
+          <div style="padding:14px 16px;border-bottom:1px solid #f4f4f5">
+            <div style="font-size:10px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Project Context</div>
+            <div class="proj-sel">
+              <select id="chat-proj-sel" onchange="updateChatProject(this.value)">
+                <option value="1">Payments Overhaul</option>
+                <option value="2">Mobile App v3</option>
+                <option value="3">Data Pipeline Infra</option>
+                <option value="5">AI Feature Launch</option>
+              </select>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:#a1a1aa;margin-top:6px" id="chat-ch">#payments-eng</div>
+          </div>
+          <div class="docs-section">
+            <div class="docs-label">Indexed Documents</div>
+            <div class="doc-item"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>architecture.md</div>
+            <div class="doc-item"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>load-test-results.pdf</div>
+            <div class="doc-item"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>risk-register.md</div>
+            <div class="doc-item"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>sprint-plan.md</div>
+            <button class="upload-btn"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Upload Document</button>
+          </div>
+          <div class="suggestions-section">
+            <div class="suggestions-label">Try asking</div>
+            <button class="suggestion" onclick="setInput('What are the current risks?')">"What are the current risks?"</button>
+            <button class="suggestion" onclick="setInput('Extract action items from Slack')">"Extract action items"</button>
+            <button class="suggestion" onclick="setInput('Summarize this week\'s progress')">"Summarize this week"</button>
+            <button class="suggestion" onclick="setInput('What is blocking the load test?')">"What is blocking the load test?"</button>
+          </div>
+        </div>
+        <div class="chat-main">
+          <div class="chat-head">
+            <div class="chat-head-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#18181b" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+            <div><div class="chat-head-title">Project AI Assistant</div><div class="chat-head-sub">RAG · 4 documents indexed · claude-3-5-sonnet</div></div>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-bubble-wrap">
+              <div class="chat-avt ai">AI</div>
+              <div><div class="chat-bubble ai">Hi! I'm your AI assistant for <b>Payments Overhaul</b>. I have access to your project documents, recent Slack messages, and task history. Ask me anything about this project.</div></div>
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <input class="chat-input" id="chat-input" placeholder="Ask about this project..." onkeydown="if(event.key==='Enter')sendChat()" />
+            <button class="chat-send" id="chat-send-btn" onclick="sendChat()">
+              Send
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="page-reports" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Reports</div></div>
+        <button class="btn btn-dark" onclick="generateReport()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Generate with AI
+        </button>
+      </div>
+      <div class="reports-grid">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Select Project</div>
+          <div class="proj-pick sel" onclick="selectReportProject(this,'Payments Overhaul','#payments-eng',56)"><div class="proj-pick-name">Payments Overhaul</div><div class="proj-pick-ch">#payments-eng</div><div class="proj-mini-prog"><div class="proj-mini-fill" style="width:56%"></div></div><div class="proj-mini-pct">56% complete</div></div>
+          <div class="proj-pick" onclick="selectReportProject(this,'Mobile App v3','#mobile-team',35)"><div class="proj-pick-name">Mobile App v3</div><div class="proj-pick-ch">#mobile-team</div><div class="proj-mini-prog"><div class="proj-mini-fill" style="width:35%"></div></div><div class="proj-mini-pct">35% complete</div></div>
+          <div class="proj-pick" onclick="selectReportProject(this,'Data Pipeline Infra','#data-infra',43)"><div class="proj-pick-name">Data Pipeline Infra</div><div class="proj-pick-ch">#data-infra</div><div class="proj-mini-prog"><div class="proj-mini-fill" style="width:43%"></div></div><div class="proj-mini-pct">43% complete</div></div>
+          <div class="proj-pick" onclick="selectReportProject(this,'Auth Service Rewrite','#platform-eng',100)"><div class="proj-pick-name">Auth Service Rewrite</div><div class="proj-pick-ch">#platform-eng</div><div class="proj-mini-prog"><div class="proj-mini-fill" style="width:100%;background:#34d399"></div></div><div class="proj-mini-pct">100% complete</div></div>
+        </div>
+        <div>
+          <div id="report-view" class="report-card">
+            <div class="report-card-head">
+              <div><div class="report-card-title">Weekly Progress Report</div><div class="report-card-meta">Payments Overhaul · Generated by AI · May 12, 2025</div></div>
+              <button style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#a1a1aa;background:none;border:none;cursor:pointer;font-family:inherit" onclick="alert('Export ready!')">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export
+              </button>
+            </div>
+            <div class="report-card-body">
+              <h2>Executive Summary</h2>
+              <p>The Payments Overhaul project is at <b>56% completion</b> targeting June 30, 2025. Stripe integration is on track, but a database scalability issue discovered during load testing poses a risk to the timeline.</p>
+              <h2>Accomplishments</h2>
+              <ul>
+                <li>Stripe v3 API migration completed and tested in staging</li>
+                <li>Webhook handlers for all 47 Stripe event types implemented</li>
+                <li>3DS2 authentication flow 80% complete</li>
+                <li>PCI compliance documentation drafted and under review</li>
+              </ul>
+              <h2>In Progress</h2>
+              <p>3DS2 fingerprinting debug ongoing with Stripe support. Checkout frontend component update and full regression test suite are queued.</p>
+              <h2>Blockers & Risks</h2>
+              <div class="risk-block">⚠️ <b>DB Connection Pool Exhaustion</b> — Load tests fail at 6,000 TPS (target: 10,000 TPS). PgBouncer provisioning required before next milestone.</div>
+              <h2>Next Steps</h2>
+              <ol>
+                <li>Provision PgBouncer in transaction mode</li>
+                <li>Re-run load tests targeting 10k TPS</li>
+                <li>Complete 3DS2 fingerprinting fix with Stripe support</li>
+                <li>Begin frontend checkout integration</li>
+              </ol>
+              <h2>Metrics</h2>
+              <table>
+                <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                <tbody>
+                  <tr><td>Tasks Completed</td><td>14 / 25</td></tr>
+                  <tr><td>Active Blockers</td><td>1</td></tr>
+                  <tr><td>Sprint Velocity</td><td>8.2 pts / week</td></tr>
+                  <tr><td>Est. Completion</td><td>June 28, 2025</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const PROJECTS = {
+  "1": { name:"Payments Overhaul", ch:"#payments-eng", desc:"Migrate legacy payment processor to Stripe with full PCI compliance", pct:56, todo:4, ip:6, bl:1, dn:14 },
+  "2": { name:"Mobile App v3", ch:"#mobile-team", desc:"Complete redesign of iOS and Android apps with new design system", pct:35, todo:9, ip:4, bl:0, dn:7 },
+  "3": { name:"Data Pipeline Infra", ch:"#data-infra", desc:"Real-time data pipeline using Kafka and Flink for analytics", pct:43, todo:2, ip:1, bl:3, dn:8 },
+  "4": { name:"Auth Service Rewrite", ch:"#platform-eng", desc:"Replace monolith auth with OAuth2/OIDC microservice", pct:100, todo:0, ip:0, bl:0, dn:22 },
+  "5": { name:"AI Feature Launch", ch:"#ai-features", desc:"Integrate Claude-powered suggestions and auto-tagging", pct:29, todo:6, ip:3, bl:1, dn:5 },
+};
+
+const AI_RESPONSES = {
+  summary: `Project Status — Payments Overhaul
+
+The Payments Overhaul is at 56% completion. Key accomplishments include full Stripe webhook integration and 3DS2 auth (80% done).
+
+The critical blocker is a DB connection pool exhaustion at 6k TPS during load testing (target: 10k TPS).
+
+Recommended Action: Provision PgBouncer in transaction mode before next load test. ETA: 2 days.`,
+  tasks: `Extracted Tasks from Recent Slack Activity:
+
+1. [CRITICAL] Provision PgBouncer or scale RDS instance
+   → Assignee: Rohan M · Due: This week
+
+2. [HIGH] Debug 3DS2 fingerprinting with Stripe support
+   → Assignee: Dev C · Due: End of sprint
+
+3. [MEDIUM] Document DB scaling decision in runbook
+   → Assignee: unassigned
+
+3 tasks added to the project tracker.`,
+  risks: `Risk Analysis — Payments Overhaul
+
+⚠️  ACTIVE RISK: Database Connection Pool Exhaustion
+  Severity   : High
+  Impact     : Blocks load test milestone; delays go-live ~2 wks
+  Owner      : Rohan M
+  Mitigation : Add PgBouncer (transaction mode) or scale RDS
+               to db.r6g.2xlarge
+
+ℹ️  WATCH: 3DS2 Integration Delay
+  Severity   : Medium
+  Impact     : 3–5 day potential delay if not resolved this sprint
+  Owner      : Dev C
+  Mitigation : Escalate Stripe support ticket to Priority tier`,
+};
+
+function showPage(id, btn, projectId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      n.classList.toggle('active', n.textContent.trim().toLowerCase().startsWith(id === 'dashboard' ? 'dash' : id));
+    });
+  }
+  if (id === 'project' && projectId) {
+    const p = PROJECTS[projectId] || PROJECTS["1"];
+    document.getElementById('det-name').textContent = p.name;
+    document.getElementById('det-ch').textContent = p.ch;
+    document.getElementById('det-desc').textContent = p.desc;
+    document.getElementById('det-pct').textContent = p.pct + '%';
+    document.getElementById('det-bar').style.width = p.pct + '%';
+    document.getElementById('det-todo').textContent = p.todo;
+    document.getElementById('det-ip').textContent = p.ip;
+    document.getElementById('det-bl').textContent = p.bl;
+    document.getElementById('det-dn').textContent = p.dn;
+    document.getElementById('det-total').textContent = p.todo+p.ip+p.bl+p.dn;
+    showTab('tasks', document.querySelector('.tab'));
+    document.getElementById('ai-result-box').style.display='none';
+  }
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.style.display='none');
+  document.getElementById('tab-'+id).style.display='block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('.tab')[['tasks','activity','ai'].indexOf(id)].classList.add('active');
+}
+
+function doAI(type) {
+  showTab('ai', null);
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===2));
+  const box = document.getElementById('ai-result-box');
+  const body = document.getElementById('ai-body');
+  const loadTxt = document.getElementById('ai-loading-txt');
+  box.style.display='block';
+  loadTxt.textContent='Thinking…';
+  body.innerHTML='<div class="skeleton" style="width:85%"></div><div class="skeleton" style="width:100%"></div><div class="skeleton" style="width:70%"></div>';
+  setTimeout(()=>{
+    loadTxt.textContent='';
+    body.textContent = AI_RESPONSES[type];
+  }, 1100 + Math.random()*600);
+}
+
+// Chat logic
+const CHAT_REPLIES = {
+  risk: { text:`Based on project documents and recent Slack activity, I've identified 2 active risks:\n\n1. DB Connection Pool Exhaustion (High) — Load tests fail at 6,000 TPS. Mitigation: Add PgBouncer or scale RDS. Owner: Rohan M.\n\n2. 3DS2 Integration Delay (Medium) — Debugging ongoing with Stripe support. Could delay go-live 3–5 days.\n\nOverall risk level: 🟡 Medium.`, sources:["risk-register.md","slack-export.json"] },
+  task: { text:`I extracted the following action items from recent Slack messages:\n\n• [CRITICAL] Resolve DB connection pool issue → Rohan M\n• [HIGH] Complete 3DS2 fingerprinting fix → Dev C\n• [MEDIUM] Run regression suite on Stripe webhooks → Priya K\n• [LOW] Update runbook with PgBouncer steps → unassigned\n\nShall I add these to the tracker?`, sources:["slack-export.json"] },
+  default: { text:`Based on the project documents, Payments Overhaul is at 56% completion. The main blocker is the database connection pool issue found during load testing at 6k TPS.\n\nBased on architecture.md, I recommend deploying PgBouncer in transaction mode — it can handle 10k+ TPS without code changes.\n\nWould you like me to draft the implementation plan or generate a risk report?`, sources:["architecture.md","load-test-results.pdf"] },
+};
+
+let chatLoading = false;
+function setInput(txt){ document.getElementById('chat-input').value=txt; document.getElementById('chat-input').focus(); }
+function updateChatProject(id){ const p=PROJECTS[id]||PROJECTS["1"]; document.getElementById('chat-ch').textContent=p.ch; }
+function appendMsg(role,text,sources){
+  const wrap=document.createElement('div');
+  wrap.className='chat-bubble-wrap'+(role==='user'?' user':'');
+  const avt=document.createElement('div');
+  avt.className='chat-avt '+(role==='user'?'user':'ai');
+  avt.textContent=role==='user'?'A':'AI';
+  const inner=document.createElement('div');
+  const bub=document.createElement('div');
+  bub.className='chat-bubble '+(role==='user'?'user':'ai');
+  text.split('\n').forEach((ln,i)=>{ const p=document.createElement('p'); p.textContent=ln; if(i>0)p.style.marginTop='8px'; bub.appendChild(p); });
+  inner.appendChild(bub);
+  if(sources&&sources.length){ const sr=document.createElement('div');sr.className='chat-sources';sources.forEach(s=>{const sp=document.createElement('span');sp.className='source-pill';sp.textContent=s;sr.appendChild(sp)});inner.appendChild(sr); }
+  wrap.appendChild(avt); wrap.appendChild(inner);
+  const msgs=document.getElementById('chat-messages');
+  msgs.appendChild(wrap); msgs.scrollTop=msgs.scrollHeight;
+}
+function sendChat(){
+  if(chatLoading) return;
+  const inp=document.getElementById('chat-input');
+  const txt=inp.value.trim(); if(!txt) return;
+  inp.value=''; appendMsg('user',txt);
+  chatLoading=true; document.getElementById('chat-send-btn').disabled=true;
+  // Typing indicator
+  const typing=document.createElement('div'); typing.className='chat-bubble-wrap'; typing.id='typing';
+  typing.innerHTML='<div class="chat-avt ai">AI</div><div><div class="chat-bubble ai"><div class="typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div></div>';
+  document.getElementById('chat-messages').appendChild(typing); document.getElementById('chat-messages').scrollTop=9999;
+  const lower=txt.toLowerCase();
+  const reply=lower.includes('risk')||lower.includes('block')?CHAT_REPLIES.risk:lower.includes('task')||lower.includes('action')?CHAT_REPLIES.task:CHAT_REPLIES.default;
+  setTimeout(()=>{
+    document.getElementById('typing').remove();
+    appendMsg('assistant',reply.text,reply.sources);
+    chatLoading=false; document.getElementById('chat-send-btn').disabled=false;
+    document.getElementById('chat-input').focus();
+  },900+Math.random()*800);
+}
+
+// Reports
+function selectReportProject(el,name,ch,pct){
+  document.querySelectorAll('.proj-pick').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function generateReport(){
+  const btn=document.querySelector('.page-header .btn-dark');
+  btn.textContent='Generating…'; btn.disabled=true;
+  const view=document.getElementById('report-view');
+  view.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px"><div style="width:36px;height:36px;background:#fbbf24;display:flex;align-items:center;justify-content:center;animation:pulse 1s infinite"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#18181b" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><p style="font-size:13px;font-weight:500;color:#52525b">Claude is generating your report…</p><div style="width:180px;display:flex;flex-direction:column;gap:8px"><div class="skeleton" style="width:100%"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:90%"></div></div></div>';
+  setTimeout(()=>{
+    btn.innerHTML='<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Generate with AI';
+    btn.disabled=false;
+    view.innerHTML=`<div class="report-card-head"><div><div class="report-card-title">Weekly Progress Report</div><div class="report-card-meta">Generated by AI · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div></div><button style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#a1a1aa;background:none;border:none;cursor:pointer;font-family:inherit" onclick="alert('Exported!')"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export</button></div><div class="report-card-body"><h2>Executive Summary</h2><p>Project is at <b>56% completion</b> targeting June 30, 2025. Strong progress on Stripe integration. One critical DB bottleneck must be resolved before load-test sign-off.</p><h2>Accomplishments</h2><ul><li>Stripe v3 API migration completed and staging-tested</li><li>All 47 Stripe webhook event handlers implemented</li><li>3DS2 auth flow 80% complete; PCI docs drafted</li></ul><h2>Blockers & Risks</h2><div class="risk-block">⚠️ DB connection pool exhausted at 6k TPS — PgBouncer needed before next load test milestone.</div><h2>Metrics</h2><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>Tasks Completed</td><td>14 / 25</td></tr><tr><td>Blockers</td><td>1</td></tr><tr><td>Velocity</td><td>8.2 pts/wk</td></tr><tr><td>Est. Completion</td><td>June 28 2025</td></tr></tbody></table></div>`;
+  }, 2000);
+}
+</script>
+</body>
+</html>
