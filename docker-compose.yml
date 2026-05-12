@@ -1,5 +1,9 @@
 version: "3.9"
 
+# AI Project Tracker — single-command stack
+# The backend (FastAPI) serves both the REST API and the built-in UI.
+# Open http://localhost:8000 after starting.
+
 services:
   postgres:
     image: postgres:16
@@ -43,15 +47,10 @@ services:
       - ./backend:/app
       - uploads:/app/uploads
       - chroma:/app/chroma_db
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
+    # After starting, the full app is at:
+    #   http://localhost:8000        → UI
+    #   http://localhost:8000/docs   → Swagger / API docs
+    #   http://localhost:8000/api/v1 → REST API
 
 volumes:
   pgdata:
